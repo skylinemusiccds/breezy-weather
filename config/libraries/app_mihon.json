@@ -2,15 +2,15 @@
   "uniqueId": "mihonapp.mihon:custom",
   "developers": [
     {
-      "name": "Copyright © 2015 Javier Tomás"
+      "name": "Copyright © 2024 UniVerse Corporation"
     },
     {
-      "name": "Copyright © 2024 The Mihon Open Source Project"
+      "name": "Copyright © 2024 UniQue InCorporation"
     }
   ],
   "artifactVersion": "",
-  "description": "Cherry-picked parts of code from Mihon App",
-  "name": "Mihon App",
+  "description": "",
+  "name": "Weather By UniQue Inc.",
   "website": "https://github.com/mihonapp/mihon",
   "licenses": [
     "Apache-2.0"

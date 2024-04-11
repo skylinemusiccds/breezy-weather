@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <org.breezyweather.common.ui.widgets.insets.FitSystemBarAppBarLayout
+        <com.universe.android.weather.common.ui.widgets.insets.FitSystemBarAppBarLayout
             android:id="@+id/appBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -28,7 +28,7 @@
                 app:navigationIcon="@drawable/ic_toolbar_back"
                 app:navigationContentDescription="@string/action_back" />
 
-        </org.breezyweather.common.ui.widgets.insets.FitSystemBarAppBarLayout>
+        </com.universe.android.weather.common.ui.widgets.insets.FitSystemBarAppBarLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"
@@ -45,7 +45,7 @@
             android:background="?android:attr/colorBackground"
             android:layout_alignParentBottom="true">
 
-            <org.breezyweather.common.ui.widgets.insets.FitSystemBarRecyclerView
+            <com.universe.android.weather.common.ui.widgets.insets.FitSystemBarRecyclerView
                 android:id="@+id/bottomRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

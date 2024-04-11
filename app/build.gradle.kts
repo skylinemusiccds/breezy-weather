@@ -13,10 +13,10 @@ plugins {
 val SUPPORTED_ABIS = setOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
 
 android {
-    namespace = "org.breezyweather"
+    namespace = "com.universe.android.weather"
 
     defaultConfig {
-        applicationId = "org.breezyweather"
+        applicationId = "com.universe.android.weather"
         versionCode = 50109
         versionName = "5.1.9"
 

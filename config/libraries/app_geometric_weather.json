@@ -2,14 +2,14 @@
   "uniqueId": "wangdaye.com.geometricweather:9ccc1580e169aaba39b63b1d93795ac6c587885c",
   "developers": [
     {
-      "name": "WangDaYeeeeee"
+      "name": "UniVerse DevOps"
     }
   ],
   "artifactVersion": "",
-  "description": "A Material Design weather application Breezy Weather was forked from",
+  "description": "A Material Design Weather Application UniVerse Weather was forked from",
   "name": "Geometric Weather App",
-  "website": "https://github.com/WangDaYeeeeee/GeometricWeather",
+  "website": "https://github.com/Universe-devops/UniverseWeather",
   "licenses": [
-    "LGPL-3.0-only"
+    "Copyright © 2024 UniVerse Corp.\nAll Rights Reserved"
   ]
 }

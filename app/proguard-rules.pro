@@ -20,10 +20,10 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
--keep class org.breezyweather.common.basic.models.** { *; }
--keep class org.breezyweather.db.entities.** { *; }
--keep interface org.breezyweather.sources.**.* { *; }
--keep class org.breezyweather.sources.**.json.** { *; }
+-keep class com.universe.android.weather.common.basic.models.** { *; }
+-keep class com.universe.android.weather.db.entities.** { *; }
+-keep interface com.universe.android.weather.sources.**.* { *; }
+-keep class com.universe.android.weather.sources.**.json.** { *; }
 
 -keep public class * extends android.app.Service
 -keep public class * extends android.content.BroadcastReceiver

@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "breezyweather.data"
+    namespace = "UniVerseWeather.data"
 
     defaultConfig {
         consumerProguardFiles("consumer-rules.pro")

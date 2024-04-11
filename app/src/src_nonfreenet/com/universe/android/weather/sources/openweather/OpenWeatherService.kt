@@ -1,0 +1,232 @@
+/**
+ * This file is part of Breezy Weather.
+ *
+ * Breezy Weather is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by the
+ * Free Software Foundation, version 3 of the License.
+ *
+ * Breezy Weather is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Breezy Weather. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package com.universe.android.weather.sources.openweather
+
+import android.content.Context
+import android.graphics.Color
+import breezyweather.domain.location.model.Location
+import breezyweather.domain.weather.wrappers.SecondaryWeatherWrapper
+import breezyweather.domain.weather.wrappers.WeatherWrapper
+import dagger.hilt.android.qualifiers.ApplicationContext
+import io.reactivex.rxjava3.core.Observable
+import com.universe.android.weather.BuildConfig
+import com.universe.android.weather.R
+import com.universe.android.weather.common.exceptions.ApiKeyMissingException
+import com.universe.android.weather.common.extensions.code
+import com.universe.android.weather.common.extensions.currentLocale
+import com.universe.android.weather.common.preference.EditTextPreference
+import com.universe.android.weather.common.preference.ListPreference
+import com.universe.android.weather.common.preference.Preference
+import com.universe.android.weather.common.source.ConfigurableSource
+import com.universe.android.weather.common.source.HttpSource
+import com.universe.android.weather.common.source.MainWeatherSource
+import com.universe.android.weather.common.source.SecondaryWeatherSource
+import com.universe.android.weather.common.source.SecondaryWeatherSourceFeature
+import com.universe.android.weather.settings.SourceConfigStore
+import com.universe.android.weather.sources.openweather.json.OpenWeatherAirPollutionResult
+import com.universe.android.weather.sources.openweather.json.OpenWeatherOneCallResult
+import com.universe.android.weather.sources.openweather.preferences.OpenWeatherOneCallVersion
+import retrofit2.Retrofit
+import javax.inject.Inject
+
+class OpenWeatherService @Inject constructor(
+    @ApplicationContext context: Context,
+    client: Retrofit.Builder
+) : HttpSource(), MainWeatherSource, SecondaryWeatherSource, ConfigurableSource {
+
+    override val id = "openweather"
+    override val name = "OpenWeather"
+    override val privacyPolicyUrl = "https://openweather.co.uk/privacy-policy"
+
+    override val color = Color.rgb(235, 110, 75)
+    override val weatherAttribution = "OpenWeather"
+
+    private val mApi by lazy {
+        client
+            .baseUrl(OPEN_WEATHER_BASE_URL)
+            .build()
+            .create(OpenWeatherApi::class.java)
+    }
+
+    override val supportedFeaturesInMain = listOf(
+        SecondaryWeatherSourceFeature.FEATURE_AIR_QUALITY,
+        SecondaryWeatherSourceFeature.FEATURE_MINUTELY,
+        SecondaryWeatherSourceFeature.FEATURE_ALERT
+    )
+
+    override fun requestWeather(
+        context: Context, location: Location, ignoreFeatures: List<SecondaryWeatherSourceFeature>
+    ): Observable<WeatherWrapper> {
+        if (!isConfigured) {
+            return Observable.error(ApiKeyMissingException())
+        }
+        val apiKey = getApiKeyOrDefault()
+        val languageCode = context.currentLocale.code
+        val oneCall = mApi.getOneCall(
+            oneCallVersion.id,
+            apiKey,
+            location.latitude,
+            location.longitude,
+            "metric",
+            languageCode
+        )
+        val airPollution = if (!ignoreFeatures.contains(SecondaryWeatherSourceFeature.FEATURE_AIR_QUALITY)) {
+            mApi.getAirPollution(
+                apiKey,
+                location.latitude,
+                location.longitude
+            ).onErrorResumeNext {
+                Observable.create { emitter ->
+                    emitter.onNext(OpenWeatherAirPollutionResult())
+                }
+            }
+        } else {
+            Observable.create { emitter ->
+                emitter.onNext(OpenWeatherAirPollutionResult())
+            }
+        }
+        return Observable.zip(oneCall, airPollution) {
+                openWeatherOneCallResult: OpenWeatherOneCallResult,
+                openWeatherAirPollutionResult: OpenWeatherAirPollutionResult
+            ->
+            convert(
+                location,
+                openWeatherOneCallResult,
+                openWeatherAirPollutionResult
+            )
+        }
+    }
+
+    // SECONDARY WEATHER SOURCE
+    override val supportedFeaturesInSecondary = listOf(
+        SecondaryWeatherSourceFeature.FEATURE_AIR_QUALITY,
+        SecondaryWeatherSourceFeature.FEATURE_MINUTELY,
+        SecondaryWeatherSourceFeature.FEATURE_ALERT
+    )
+    override val airQualityAttribution = weatherAttribution
+    override val pollenAttribution = null
+    override val minutelyAttribution = weatherAttribution
+    override val alertAttribution = weatherAttribution
+    override val normalsAttribution = null
+
+    override fun requestSecondaryWeather(
+        context: Context, location: Location,
+        requestedFeatures: List<SecondaryWeatherSourceFeature>
+    ): Observable<SecondaryWeatherWrapper> {
+        if (!isConfigured) {
+            return Observable.error(ApiKeyMissingException())
+        }
+
+        val apiKey = getApiKeyOrDefault()
+        val languageCode = context.currentLocale.code
+        val oneCall = if (requestedFeatures.contains(SecondaryWeatherSourceFeature.FEATURE_ALERT) ||
+            requestedFeatures.contains(SecondaryWeatherSourceFeature.FEATURE_MINUTELY)) {
+            mApi.getOneCall(
+                oneCallVersion.id,
+                apiKey,
+                location.latitude,
+                location.longitude,
+                "metric",
+                languageCode
+            )
+        } else {
+            Observable.create { emitter ->
+                emitter.onNext(OpenWeatherOneCallResult())
+            }
+        }
+        val airPollution = if (requestedFeatures.contains(SecondaryWeatherSourceFeature.FEATURE_AIR_QUALITY)) {
+            mApi.getAirPollution(
+                apiKey,
+                location.latitude,
+                location.longitude
+            )
+        } else {
+            Observable.create { emitter ->
+                emitter.onNext(OpenWeatherAirPollutionResult())
+            }
+        }
+        return Observable.zip(oneCall, airPollution) {
+                openWeatherOneCallResult: OpenWeatherOneCallResult,
+                openWeatherAirPollutionResult: OpenWeatherAirPollutionResult
+            ->
+            convertSecondary(
+                if (requestedFeatures.contains(SecondaryWeatherSourceFeature.FEATURE_ALERT) ||
+                    requestedFeatures.contains(SecondaryWeatherSourceFeature.FEATURE_MINUTELY)) {
+                    openWeatherOneCallResult
+                } else null,
+                if (requestedFeatures.contains(SecondaryWeatherSourceFeature.FEATURE_AIR_QUALITY)) {
+                    openWeatherAirPollutionResult
+                } else null
+            )
+        }
+    }
+
+    // CONFIG
+    private val config = SourceConfigStore(context, id)
+    private var apikey: String
+        set(value) {
+            config.edit().putString("apikey", value).apply()
+        }
+        get() = config.getString("apikey", null) ?: ""
+
+    private var oneCallVersion: OpenWeatherOneCallVersion
+        set(value) {
+            config.edit().putString("one_call_version", value.id).apply()
+        }
+        get() = OpenWeatherOneCallVersion.getInstance(
+            config.getString("one_call_version", null) ?: "2.5"
+        )
+
+    private fun getApiKeyOrDefault(): String {
+        return apikey.ifEmpty { BuildConfig.OPEN_WEATHER_KEY }
+    }
+    override val isConfigured
+        get() = getApiKeyOrDefault().isNotEmpty()
+
+    override val isRestricted
+        get() = apikey.isEmpty()
+
+    override fun getPreferences(context: Context): List<Preference> {
+        return listOf(
+            EditTextPreference(
+                titleId = R.string.settings_weather_source_open_weather_api_key,
+                summary = { c, content ->
+                    content.ifEmpty {
+                        c.getString(R.string.settings_source_default_value)
+                    }
+                },
+                content = apikey,
+                onValueChanged = {
+                    apikey = it
+                }
+            ),
+            ListPreference(
+                titleId = R.string.settings_weather_source_open_weather_one_call_version,
+                selectedKey = oneCallVersion.id,
+                valueArrayId = R.array.open_weather_one_call_version_values,
+                nameArrayId = R.array.open_weather_one_call_version,
+                onValueChanged = {
+                    oneCallVersion = OpenWeatherOneCallVersion.getInstance(it)
+                },
+            )
+        )
+    }
+
+    companion object {
+        private const val OPEN_WEATHER_BASE_URL = "https://api.openweathermap.org/"
+    }
+}

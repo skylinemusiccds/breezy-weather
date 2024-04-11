@@ -41,7 +41,7 @@ You can omit any of the following properties to let the user configure their own
 
 # Decode crash logs from users
 
-1) Save crash log in a text file `stacktrace.txt` and remove things like `2023-08-14 21:28:58.229 12804-12804 View org.breezyweather.debug` if they are present.
+1) Save crash log in a text file `stacktrace.txt` and remove things like `2023-08-14 21:28:58.229 12804-12804 View com.universe.android.weather.debug` if they are present.
 2) From the release page, download mapping-vX.X.X-standard.tar.gz, mapping-vX.X.X-fdroid.tar.gz or mapping-vX.X.X-gplay.tar.gz depending on the version used by the user.
 3) Unzip `mapping.txt`.
 4) `~/Android/Sdk/tools/proguard/bin/retrace.sh mapping.txt stacktrace.txt`

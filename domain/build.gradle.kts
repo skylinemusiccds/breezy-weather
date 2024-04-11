@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "breezyweather.domain"
+    namespace = "UniVerseWeather.domain"
 
     defaultConfig {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

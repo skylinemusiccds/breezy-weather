@@ -58,7 +58,7 @@ Install it and you’re done!
 
 #### Getting updates from standard flavor of the Izzy repo
 
-In the “Add App” screen, just add the following URL as App Source URL: https://apt.izzysoft.de/fdroid/index/apk/org.breezyweather
+In the “Add App” screen, just add the following URL as App Source URL: https://apt.izzysoft.de/fdroid/index/apk/com.universe.android.weather
 
 Tap the “Add” button at the very top, and you’re done!
 
@@ -75,7 +75,7 @@ In the “Add App” screen:
 
 #### Getting updates from F-Droid flavor of the default F-Droid repo
 
-In the “Add App” screen, just add the following URL as App Source URL: https://f-droid.org/packages/org.breezyweather/
+In the “Add App” screen, just add the following URL as App Source URL: https://f-droid.org/packages/com.universe.android.weather/
 
 Tap the “Add” button at the very top, and you’re done!
 

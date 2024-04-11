@@ -29,7 +29,7 @@ dependencyResolutionManagement {
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
-rootProject.name = "BreezyWeather"
+rootProject.name = "UniVerse Weather"
 include(":app")
 include(":data")
 include(":domain")
